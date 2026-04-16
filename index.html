@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="访谈助手">
+<title>访谈助手</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--bg:#f5f5f7;--card:#fff;--text:#1d1d1f;--text2:rgba(0,0,0,.5);--text3:rgba(0,0,0,.35);
+--blue:#0071e3;--blue-bg:rgba(0,113,227,.06);--green:#34c759;--green-bg:rgba(52,199,89,.08);
+--orange:#ff9500;--red:#ff3b30;--border:rgba(0,0,0,.08);--radius:14px;
+--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)}
+body{font-family:-apple-system,'SF Pro Text','SF Pro Display','Helvetica Neue',sans-serif;
+background:var(--bg);color:var(--text);font-size:16px;line-height:1.47;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.topbar{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.82);
+backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+padding-top:var(--safe-t);border-bottom:1px solid var(--border)}
+.topbar-inner{display:flex;align-items:center;height:48px;padding:0 16px;gap:6px}
+.breadcrumb{font-size:13px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.breadcrumb b{color:var(--text);font-weight:600}
+.btn-nav{font-size:13px;color:var(--blue);font-weight:500;background:none;border:none;padding:6px 10px;border-radius:8px;white-space:nowrap}
+.btn-nav:active{background:rgba(0,113,227,.08)}
+.progress-wrap{height:3px;background:var(--border)}
+.progress-fill{height:100%;background:var(--blue);transition:width .4s ease;border-radius:0 2px 2px 0}
+.main{padding:calc(52px + var(--safe-t)) 0 calc(72px + var(--safe-b));min-height:100vh}
+.content{padding:12px 16px 24px}
+.script-box{background:var(--card);border-radius:var(--radius);padding:20px 18px;margin-bottom:14px;border-left:4px solid var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.script-tag{font-size:11px;font-weight:700;color:var(--blue);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+.script-tag::before{content:'📢 '}
+.script-text{font-size:18px;font-weight:400;line-height:1.55;letter-spacing:-0.15px}
+.info-box{background:var(--card);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.info-title{font-size:13px;font-weight:600;margin-bottom:10px}
+.scene-tags{display:flex;flex-wrap:wrap;gap:6px}
+.scene-tag{font-size:13px;padding:5px 10px;border-radius:8px;background:var(--blue-bg);color:var(--blue);font-weight:500}
+.style-count{display:inline-block;font-size:12px;padding:3px 8px;border-radius:6px;background:rgba(255,149,0,.1);color:var(--orange);font-weight:600;margin-top:8px}
+.checklist-box{background:var(--card);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.checklist-title{font-size:13px;font-weight:600;margin-bottom:10px}
+.checklist{list-style:none}
+.checklist li{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border);font-size:15px;line-height:1.4;cursor:pointer;-webkit-user-select:none;user-select:none}
+.checklist li:last-child{border-bottom:none}
+.ck{width:22px;height:22px;border-radius:50%;border:2px solid rgba(0,0,0,.18);flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.checklist li.done .ck{background:var(--green);border-color:var(--green)}
+.checklist li.done .ck::after{content:'✓';color:#fff;font-size:12px;font-weight:700}
+.checklist li.done .ck-text{color:var(--text3);text-decoration:line-through}
+.note-box{background:var(--card);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+.note-box textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:14px;font-family:inherit;resize:vertical;min-height:56px;background:#fafafa;color:var(--text);outline:none}
+.note-box textarea:focus{border-color:var(--blue);background:#fff}
+.note-label{font-size:12px;color:var(--text3);margin-bottom:6px}
+.bottombar{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.88);
+backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);
+border-top:1px solid var(--border);padding:10px 16px calc(10px + var(--safe-b))}
+.bottom-inner{display:flex;gap:10px}
+.btn{flex:1;height:46px;border-radius:10px;border:none;font-size:16px;font-weight:600;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;transition:opacity .15s}
+.btn:active{opacity:.65}
+.btn-prev{background:rgba(0,0,0,.06);color:var(--text)}
+.btn-next{background:var(--blue);color:#fff}
+.btn-done{background:var(--green);color:#fff}
+.btn:disabled{opacity:.3;pointer-events:none}
+.overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.25);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);opacity:0;pointer-events:none;transition:opacity .25s}
+.overlay.show{opacity:1;pointer-events:auto}
+.sidebar{position:fixed;top:0;bottom:0;right:0;z-index:201;width:84%;max-width:360px;background:var(--card);transform:translateX(100%);transition:transform .3s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;padding:calc(16px + var(--safe-t)) 0 calc(16px + var(--safe-b))}
+.sidebar.show{transform:translateX(0)}
+.sb-header{padding:0 18px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sb-title{font-size:18px;font-weight:700}
+.sb-close{font-size:14px;color:var(--blue);background:none;border:none;padding:6px 10px;border-radius:8px}
+.sb-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:8px 0}
+.sb-section{padding:12px 18px 4px;font-size:12px;font-weight:700;color:var(--text2);letter-spacing:.5px;position:sticky;top:0;background:var(--card);z-index:1}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;font-size:14px;line-height:1.35}
+.sb-item:active{background:rgba(0,0,0,.04)}
+.sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-dot.todo{background:rgba(0,0,0,.12)}.sb-dot.cur{background:var(--blue);box-shadow:0 0 0 3px rgba(0,113,227,.2)}.sb-dot.done{background:var(--green)}
+.sb-name{flex:1}.sb-item.active .sb-name{color:var(--blue);font-weight:600}
+.sb-badge{font-size:11px;color:var(--text3)}
+.sb-reset{margin:16px 18px 0;padding:12px;border-radius:10px;border:none;font-size:14px;color:var(--red);background:rgba(255,59,48,.06);font-family:inherit;cursor:pointer;font-weight:500}
+.step-done-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--green);background:var(--green-bg);padding:3px 10px;border-radius:6px;margin-bottom:12px}
+.tts-btn{font-size:12px;color:var(--blue);background:var(--blue-bg);border:none;border-radius:6px;padding:3px 10px;margin-left:8px;font-family:inherit;font-weight:600;cursor:pointer;vertical-align:middle}
+.tts-btn:active{opacity:.7}
+.tts-btn.speaking{color:#fff;background:var(--red)}
+.obs-box{background:var(--card);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.04);border-left:4px solid var(--orange)}
+.obs-title{font-size:13px;font-weight:600;margin-bottom:10px;color:var(--orange)}
+.obs-item{font-size:14px;line-height:1.5;color:var(--text);padding:4px 0}
+/* 被试选择页 */
+.home{padding:calc(60px + var(--safe-t)) 16px calc(20px + var(--safe-b));min-height:100vh}
+.home-title{font-size:28px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px}
+.home-sub{font-size:14px;color:var(--text2);margin-bottom:24px}
+.group-title{font-size:13px;font-weight:700;color:var(--text2);letter-spacing:.3px;margin:20px 0 10px;padding-left:2px}
+.p-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.p-card{background:var(--card);border-radius:12px;padding:10px 0;text-align:center;font-size:15px;font-weight:600;
+box-shadow:0 1px 3px rgba(0,0,0,.04);cursor:pointer;position:relative;border:2px solid transparent;transition:all .2s}
+.p-card:active{transform:scale(.96)}
+.p-card.finished{border-color:var(--green);background:var(--green-bg)}
+.p-card.finished::after{content:'✓';position:absolute;top:3px;right:5px;font-size:10px;color:var(--green);font-weight:700}
+.p-card.active-p{border-color:var(--blue)}
+.home-actions{margin-top:24px;display:flex;gap:10px}
+.home-actions .btn{height:44px;font-size:15px}
+.home-note{background:var(--card);border-radius:12px;padding:14px;margin-top:12px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.home-note .note-label{font-size:12px;color:var(--text3);margin-bottom:4px}
+.home-note textarea{width:100%;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font-size:13px;font-family:inherit;resize:vertical;min-height:40px;background:#fafafa;color:var(--text);outline:none}
+.home-note textarea:focus{border-color:var(--blue);background:#fff}
+.p-label{font-size:11px;color:var(--text3);margin-top:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="overlay" id="ov" onclick="closeSB()"></div>
+<div class="sidebar" id="sb"><div class="sb-header"><span class="sb-title">流程全览</span><button class="sb-close" onclick="closeSB()">关闭</button></div><div class="sb-body" id="sbB"></div></div>
+<script>
+// ===== 流程数据 =====
+const QM=['你画的调节控件会让你联想到过去（生活中使用过的任何设备、物体/在屏幕上的使用经验）？','这些功能有你日常使用过的吗，在屏幕上或者直接在设备上使用的？','（如有使用经验）回忆实际控制场景，还原日常在手机上控制的场景（关键因子：什么时候、在哪、为什么、怎么控制的）？','（方位/挡位部分问）在日常使用过程里，哪些信息让你确认控制成功了？'];
+const QE=['（如果与画的不一致）为什么没有选择你原本画的控件？','相比其他控件，选择这个控件的核心原因是什么？','为什么不选择其他的？','打低分的维度原因？'];
+const QS=['增加这个刻度点（标签）/变为弧形滑条，对你日常调节有什么帮助吗？','你觉得当前的刻度点（标签）符合你的调节需求吗？'];
+
+const INTRO_P1={p:'介绍',cat:'研究介绍',step:'开场白',audio:'part1.MP3',script:'本次研究是关于"智能家居设备不同功能适合用什么样的控件来调节"的体验和访谈。\n\n在手机里，我们常常通过各种控件来调节功能，比如智能家居设备的亮度、温度、扫风方向等。这次的研究希望了解：在你的日常生活里，针对不同的调节功能，你会更倾向于使用哪种控件。\n\n本次研究分为3个部分，你做的是Part1的部分。\n在整个过程中，\n首先需要你想象并描述你理想中的调节方式，过程我会请你在纸上画出控件的大致样子。（这里说的"控件"，就是手机界面里用来执行操作的按钮、滑条、选择器等）。\n然后我会请你实际体验几种已有的控件，需要你按照自己的感觉对它们进行偏好选择和打分。\n\n过程我会问你一些相关问题。我们关心的是你的直观感受和真实想法，没有对错。整个过程预计一个半小时。有问题你可以随时提问。会有录像录音。所有信息仅用于研究和设计改进，不会泄露你的任何个人隐私。',q:[]};
+
+const INTRO_P23={p:'介绍',cat:'研究介绍',step:'开场白',audio:'part2和3.MP3',script:'本次研究是关于"智能家居设备功能的调节控件"的，设备功能比如设备的亮度、温度、扫风方向。这次的研究希望了解：在你的日常生活里，针对不同的调节功能，你认为体验好的控件是什么样子。\n\n你本次做的是整个研究的Part2和3的部分。\n\nPart2需要你想象并描述你理想中的调节方式，过程我会请你在纸上画出控件的大致样子。（这里说的"控件"，就是手机界面里用来执行操作的按钮、滑条、选择器等）。然后你会体验一些现有的控件，然后进行选择和评分。\n\nPart3只有体验的部分，不再需要在纸上画，只需要你按照自己的感觉对它们进行偏好选择和打分。\n\n整个过程我会问你一些相关问题。我们关心的是你的直观感受和真实想法，没有对错。整个过程预计一个半小时。有问题你可以随时提问。过程会有录像录音。所有信息仅用于研究和设计改进，不会泄露你的任何个人隐私。',q:[]};
+
+function buildP1(){
+  const cats=[
+    {cat:'开关',sc:['风扇开关','墙壁开关一组三个','浴霸灯光开关','晾衣架除菌模式开关','智能鱼缸总开关和照明开关','按摩仪总开关和热敷功能开关'],st:2,obs:['用户是否描述了几种开关的差别，分别适用什么']},
+    {cat:'模式',sc:['空调模式','灯光模式','冰箱制冰'],st:2,obs:['用户是否描述了2个控件的差别。','对模式的理解。','模式数量多和少选择的控件有差别吗。']},
+    {cat:'挡位',sc:['加湿器','风速','净烟机净烟','电暖器加热'],st:5,obs:['选择的控件，在不同挡位数量上总是适用吗，4个、7个，最多多少个']},
+    {cat:'方位',sc:['晾衣架出风方向','浴霸风向角度','风扇扫风角度','空调扫风定格位置','百叶帘叶片角度','窗帘开合位置'],st:4,dn:'看图片'},
+    {cat:'温度',sc:['空调（16-31）','热水器（35-65）','冰箱冷藏室（2-8）、冷冻室（-24~-16）','电热水壶（40-90）'],st:3,obs:['选择的控件适合各种调节范围吗。','每个控件分别适合什么范围，什么精准度。']},
+    {cat:'时间',sc:['定时1（时间点）','定时2（时间段）','倒计时（总时长：2小时）','延时（总时长：12小时）'],st:3,obs:['滚轮适合的范围是多大。'],drawSc:['定时1（时间点、范围是24小时，一天中的一个时间）','定时2（设置一个时间段，有开始和结束时间，分别可选范围也是24小时）','倒计时（总时长：2小时，一个设备倒计时开启）','延时（总时长：12小时，一个设备延时多久关闭）']}
+  ];
+  const r=[INTRO_P1];
+  cats.forEach((c,ci)=>{
+    const drawScript = ci===0 ? '那我们现在开始画的部分，假设现在要在手机屏幕上控制【'+c.cat+'】功能，我想请你在纸上画一下你脑海里想的理想的控件是什么样的？' : '假设现在要在手机屏幕上控制【'+c.cat+'】功能，我想请你在纸上画一下你脑海里想的控件是什么样的？';
+    r.push({p:'Part1',cat:c.cat,step:'画',script:drawScript+(c.dn?'\n\n⚠️ 请先给被试看图片！':''),q:(c.drawSc||c.sc).slice(),qTitle:'测试种类'});
+    r.push({p:'Part1',cat:c.cat,step:'访谈',script:'针对你刚才画的控件，我想问你几个问题。',q:QM.slice()});
+    r.push({p:'Part1',cat:c.cat,step:'体验',script:'现在你可以体验一下已有的一些控件。尽可能想象设备就在你面前，你在进行控制。体验【'+c.cat+'】这一排。体验完一个，然后进行一次选择，选择你日常更倾向使用的那个。',sc:c.sc,q:QE.slice(0,3),obs:c.obs});
+    r.push({p:'Part1',cat:c.cat,step:'评分',script:'现在需要你对刚刚体验的控件进行评分。',st:c.st,q:['打低分的维度原因？']});
+  });
+  return r;
+}
+
+function buildP23(){
+  const r=[INTRO_P23];
+  // Part2
+  r.push({p:'Part2',cat:'设置',step:'画',script:'那现在先开始画的部分，假设现在要在手机屏幕上【  】，请在纸上画出你脑海里的控件。',q:['设置时间（范围0-24小时，比如设置床头灯自动在晚上21:00打开。）','设置时间（范围0-60分钟，比如设置在检测到有人到家时，5分钟后开启加湿器。）','设置灯光亮度','设置空气质量（范围0-600，比如当检测到空气质量高于...）'],qTitle:'测试种类'});
+  r.push({p:'Part2',cat:'设置',step:'访谈',script:'针对你刚才画的控件，我想问你几个问题。',q:['你画的调节控件会让你联想到过去（生活中使用过的任何设备、物体/在屏幕上的使用经验）？','这些功能有你日常使用过的吗？']});
+  r.push({p:'Part2',cat:'设置',step:'体验',script:'现在你可以体验一下已有的一些控件。体验【设置】这一排。体验完一个，然后进行一次选择，选择你日常更倾向使用的那个。',sc:['设置时间（小时）','设置时间（分钟）','灯光亮度','空气质量'],q:QE.slice(0,3)});
+  r.push({p:'Part2',cat:'设置',step:'评分',script:'现在需要你对刚刚体验的控件进行评分。',st:2,q:['打低分的维度原因？']});
+  r.push({p:'Part2',cat:'功能入口',step:'体验',script:'接下来体验【功能入口】的控件，体验完后，选择你日常最倾向使用的那个。',q:['相比其他控件，选择这个控件的核心原因是什么？','为什么不选择其他的？']});
+  r.push({p:'Part2',cat:'功能入口',step:'评分',script:'现在需要你对刚刚体验的控件进行评分。',st:2,q:['打低分的维度原因？']});
+  // Part3
+  r.push({p:'Part3',cat:'滑条专项',step:'介绍',script:'接下来是针对滑条这种控件的进一步测试。你将体验几类不同的滑条。每体验一组，需要在这一组中选择适合这种滑条的功能。',q:[]});
+  ['（推荐值）定位点','（等分）定位点','（整数）定位点','标签'].forEach(s=>{
+    r.push({p:'Part3',cat:s,step:'体验+选择',script:'请体验【'+s+'】内的滑条，然后选择你认为应该增加【'+s+'】的功能。',q:['你认为还有哪些功能可以加这个【'+s+'】吗？为什么？','增加这个【'+s+'】，对你日常调节有什么帮助吗？','你觉得当前功能加的【'+s+'】，符合你的需求吗？']});
+    r.push({p:'Part3',cat:s,step:'评分',script:'基于你刚刚的选择，为带有【'+s+'】的控件进行评分。',q:['打低分的维度原因？']});
+  });
+  ['弧形滑条','弧形滑条+定位点','弧形滑条+定位点+标签'].forEach(s=>{
+    r.push({p:'Part3',cat:s,step:'体验+选择',script:'请体验【'+s+'】内的滑条，然后选择你认为适合【'+s+'】的功能。',q:['你认为还有哪些功能适合【'+s+'】，为什么？','改为【'+s+'】，对你日常调节有什么帮助吗？']});
+    r.push({p:'Part3',cat:s,step:'评分',script:'基于你刚刚的选择，为【'+s+'】控件进行评分。',q:['打低分的维度原因？']});
+  });
+  r.push({p:'Part3',cat:'风速挡位',step:'体验、选择',script:'接下来，体验轨道填充中的【风速挡位】的3个控件，然后选择你日常最倾向使用的那个。',q:QE.slice(1,3)});
+  ['百叶帘透光','设置空气质量'].forEach(s=>{
+    const label = s==='百叶帘透光'?'百叶帘叶片角度':'设置空气质量';
+    r.push({p:'Part3',cat:s,step:'体验、选择',script:'体验【'+label+'】的3个控件，然后选择你日常最倾向使用的那个。',q:QE.slice(1,3)});
+  });
+  r.push({p:'Part3',cat:'风速/百叶帘/空气质量',step:'3样式评分',script:'为刚刚体验的3个控件进行评分。',q:['打低分的维度原因？']});
+  r.push({p:'Part3',cat:'空调模式',step:'体验、选择',script:'接下来，体验切换器中的【空调模式】的3个控件，然后选择你日常最倾向使用的那个。',q:QE.slice(1,3)});
+  ['电暖器挡位','净烟机挡位'].forEach(s=>{
+    r.push({p:'Part3',cat:s,step:'体验、选择',script:'体验【'+s+'】的3个控件，然后选择你日常最倾向使用的那个。',q:QE.slice(1,3)});
+  });
+  r.push({p:'Part3',cat:'空调/电暖器/净烟机',step:'3样式评分',script:'为刚刚体验的3个控件进行评分。',q:['打低分的维度原因？']});
+  return r;
+}
+
+const GROUPS=[
+  {id:'p1',name:'Part1 实验',total:30,flow:buildP1},
+  {id:'p23',name:'Part2+3 实验',total:30,flow:buildP23}
+];
+
+// ===== 状态管理 =====
+let DB;
+function loadDB(){try{DB=JSON.parse(localStorage.getItem('iv5'));if(!DB||DB.v!==5)throw 0}catch(e){DB={v:5,groups:{}}}return DB}
+function saveDB(){localStorage.setItem('iv5',JSON.stringify(DB))}
+function getP(gid,pid){
+  if(!DB.groups[gid])DB.groups[gid]={};
+  if(!DB.groups[gid][pid])DB.groups[gid][pid]={done:false,cur:0,d:{},c:{},n:{},note:''};
+  return DB.groups[gid][pid];
+}
+loadDB();
+
+// ===== 当前状态 =====
+let mode='home'; // home | flow
+let gid='',pid=0,flow=[],cur=0,pState=null;
+
+// ===== 首页渲染 =====
+function renderHome(){
+  mode='home';
+  let h='<div class="home"><div class="home-title">访谈助手</div><div class="home-sub">智能家居控件调研 · 被试管理</div>';
+  GROUPS.forEach(g=>{
+    const gd=DB.groups[g.id]||{};
+    const doneCount=Object.values(gd).filter(p=>p.done).length;
+    h+='<div class="group-title">'+g.name+'（'+doneCount+'/'+g.total+'）</div><div class="p-grid">';
+    for(let i=1;i<=g.total;i++){
+      const p=gd[i];
+      const cls=p&&p.done?'finished':'';
+      h+='<div class="p-card '+cls+'" onclick="selectP(\''+g.id+'\','+i+')"><div>P'+i+'</div>';
+      if(p&&p.note)h+='<div class="p-label">📝</div>';
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  h+='<div class="home-actions"><button class="btn btn-prev" style="flex:none;padding:0 20px;font-size:14px" onclick="exportData()">导出数据</button></div>';
+  h+='</div>';
+  document.getElementById('app').innerHTML=h;
+}
+
+function selectP(g,p){
+  gid=g;pid=p;pState=getP(gid,pid);
+  const grp=GROUPS.find(x=>x.id===g);
+  flow=grp.flow();
+  // 弹出操作选项
+  let h='<div class="home"><div style="padding-top:calc(var(--safe-t) + 60px)">';
+  h+='<div style="font-size:20px;font-weight:700;margin-bottom:4px">'+grp.name+' · 被试 P'+pid+'</div>';
+  h+='<div style="font-size:14px;color:var(--text2);margin-bottom:20px">'+(pState.done?'✅ 已完成':'⏳ 进行中 — 步骤 '+(pState.cur+1)+'/'+flow.length)+'</div>';
+  // 备注
+  h+='<div class="home-note"><div class="note-label">被试备注（姓名/编号/特征等）</div>';
+  h+='<textarea placeholder="记录被试信息…" oninput="savePNote(this.value)">'+((pState.note)||'')+'</textarea></div>';
+  // 按钮
+  h+='<div class="home-actions">';
+  h+='<button class="btn btn-prev" onclick="renderHome()">← 返回</button>';
+  if(pState.done){
+    h+='<button class="btn btn-next" onclick="startFlow(true)">查看记录</button>';
+    h+='<button class="btn btn-prev" style="flex:none;padding:0 16px;color:var(--orange)" onclick="reopenP()">重新开放</button>';
+  }else{
+    h+='<button class="btn btn-next" onclick="startFlow(false)">'+(pState.cur>0?'继续访谈':'开始访谈')+'</button>';
+  }
+  h+='</div></div></div>';
+  document.getElementById('app').innerHTML=h;
+}
+
+function savePNote(v){pState.note=v;saveDB()}
+function reopenP(){pState.done=false;saveDB();selectP(gid,pid)}
+
+function startFlow(readonly){
+  mode='flow';
+  cur=pState.cur||0;
+  renderFlow();
+}
+
+// ===== 流程页渲染 =====
+function renderFlow(){
+  const s=flow[cur],T=flow.length,isDone=!!pState.d[cur],dc=Object.keys(pState.d).length;
+  const grp=GROUPS.find(x=>x.id===gid);
+  // 构建页面
+  let h='<div class="topbar"><div class="topbar-inner">';
+  h+='<button class="btn-nav" onclick="backHome()">← P'+pid+'</button>';
+  h+='<div class="breadcrumb">'+s.p+' › <b>'+s.cat+'</b> › '+s.step+'</div>';
+  h+='<button class="btn-nav" onclick="openSB()">☰</button>';
+  h+='</div><div class="progress-wrap"><div class="progress-fill" style="width:'+(dc/T*100)+'%"></div></div></div>';
+  h+='<div class="main"><div class="content">';
+  if(isDone)h+='<div class="step-done-badge">✓ 已完成</div>';
+  h+='<div class="script-box"><div class="script-tag">口播内容'+(s.audio?' <button class="tts-btn" onclick="toggleTTS()">🔊 朗读</button>':'')+'</div><div class="script-text">'+s.script.replace(/\n/g,'<br>')+'</div></div>';
+  if(s.sc&&s.sc.length){
+    h+='<div class="info-box"><div class="info-title">🎯 涉及场景</div><div class="scene-tags">';
+    s.sc.forEach(x=>h+='<span class="scene-tag">'+x+'</span>');
+    h+='</div>';if(s.st)h+='<div class="style-count">'+s.st+'个样式</div>';h+='</div>';
+  }else if(s.st){
+    h+='<div class="info-box"><div class="info-title">🎨 样式数量</div><div class="style-count">'+s.st+'个样式</div></div>';
+  }
+  if(s.q.length){
+    const cs=pState.c[cur]||[];
+    h+='<div class="checklist-box"><div class="checklist-title">💬 '+(s.qTitle||'追问清单')+'</div><ul class="checklist">';
+    s.q.forEach((c,i)=>h+='<li class="'+(cs[i]?'done':'')+'" onclick="ckT('+i+')"><div class="ck"></div><span class="ck-text">'+c+'</span></li>');
+    h+='</ul></div>';
+  }
+  if(s.obs&&s.obs.length){
+    h+='<div class="obs-box"><div class="obs-title">👀 观察要点</div>';
+    s.obs.forEach(o=>h+='<div class="obs-item">• '+o+'</div>');
+    h+='</div>';
+  }
+  h+='<div class="note-box"><div class="note-label">📝 备注</div><textarea placeholder="记录要点…" oninput="sn(this.value)">'+(pState.n[cur]||'')+'</textarea></div>';
+  h+='</div></div>';
+  // 底部
+  h+='<div class="bottombar"><div class="bottom-inner">';
+  h+='<button class="btn btn-prev" '+(cur===0?'disabled':'')+' onclick="goF(-1)">‹ 上一步</button>';
+  if(cur===T-1)h+='<button class="btn btn-done" onclick="goF(1)">完成该被试 🎉</button>';
+  else h+='<button class="btn btn-next" onclick="goF(1)">下一步 ›</button>';
+  h+='</div></div>';
+  document.getElementById('app').innerHTML=h;
+  window.scrollTo(0,0);
+  pState.cur=cur;saveDB();
+}
+
+function ckT(i){if(!pState.c[cur])pState.c[cur]=[];pState.c[cur][i]=!pState.c[cur][i];saveDB();renderFlow()}
+function sn(v){pState.n[cur]=v;saveDB()}
+function goF(d){
+  speechSynthesis.cancel();if(audioEl){audioEl.pause();audioEl.currentTime=0;audioEl=null}
+  if(d===1){pState.d[cur]=true;saveDB();if(cur<flow.length-1){cur++;renderFlow()}else{finishP()}}
+  else{if(cur>0){cur--;renderFlow()}}
+}
+function finishP(){pState.done=true;saveDB();renderHome()}
+function backHome(){pState.cur=cur;saveDB();selectP(gid,pid)}
+
+// ===== 侧边栏 =====
+function openSB(){
+  const parts=[...new Set(flow.map(s=>s.p))];
+  let h='';
+  parts.forEach(p=>{
+    h+='<div class="sb-section">'+p+'</div>';
+    flow.forEach((s,i)=>{if(s.p!==p)return;
+      const st=pState.d[i]?'done':i===cur?'cur':'todo';
+      const b=pState.d[i]?'✓':i===cur?'当前':'';
+      h+='<div class="sb-item'+(i===cur?' active':'')+'" onclick="jtF('+i+')"><div class="sb-dot '+st+'"></div><span class="sb-name">'+s.cat+' · '+s.step+'</span><span class="sb-badge">'+b+'</span></div>';
+    });
+  });
+  document.getElementById('sbB').innerHTML=h;
+  document.getElementById('ov').classList.add('show');
+  document.getElementById('sb').classList.add('show');
+  setTimeout(()=>{const a=document.querySelector('.sb-item.active');if(a)a.scrollIntoView({block:'center',behavior:'smooth'})},100);
+}
+function closeSB(){document.getElementById('ov').classList.remove('show');document.getElementById('sb').classList.remove('show')}
+function jtF(i){cur=i;closeSB();renderFlow()}
+
+// ===== 导出 =====
+function exportData(){
+  let txt='访谈数据导出\n'+new Date().toLocaleString()+'\n\n';
+  GROUPS.forEach(g=>{
+    txt+='===== '+g.name+' =====\n';
+    const gd=DB.groups[g.id]||{};
+    for(let i=1;i<=g.total;i++){
+      const p=gd[i];if(!p)continue;
+      txt+='\n--- P'+i+(p.done?' [已完成]':' [进行中]')+' ---\n';
+      if(p.note)txt+='被试备注: '+p.note+'\n';
+      const fl=g.flow();
+      Object.keys(p.n).forEach(k=>{
+        if(p.n[k]){const s=fl[k];if(s)txt+=s.cat+'/'+s.step+': '+p.n[k]+'\n'}
+      });
+    }
+    txt+='\n';
+  });
+  const blob=new Blob([txt],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='访谈数据_'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click();
+}
+
+// ===== TTS =====
+let audioEl=null;
+function toggleTTS(){
+  // Part1介绍页用音频文件
+  const s=flow[cur];
+  if(s&&s.audio){
+    if(audioEl&&!audioEl.paused){audioEl.pause();audioEl.currentTime=0;onTTSEnd();return}
+    audioEl=new Audio(s.audio);
+    audioEl.onplay=onTTSStart;audioEl.onended=onTTSEnd;audioEl.onerror=onTTSEnd;
+    audioEl.play();return;
+  }
+  // 其他步骤用语音合成
+  const syn=window.speechSynthesis;
+  if(syn.speaking){syn.cancel();return}
+  if(!s)return;
+  const u=new SpeechSynthesisUtterance(s.script);
+  u.lang='zh-CN';u.rate=1;
+  u.onstart=onTTSStart;u.onend=onTTSEnd;
+  syn.speak(u);
+}
+function onTTSStart(){const b=document.querySelector('.tts-btn');if(b){b.textContent='⏹ 停止';b.classList.add('speaking')}}
+function onTTSEnd(){const b=document.querySelector('.tts-btn');if(b){b.textContent='🔊 朗读';b.classList.remove('speaking')}}
+
+renderHome();
+</script>
+</body>
+</html>
